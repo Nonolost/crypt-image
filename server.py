@@ -1,8 +1,6 @@
 import BaseHTTPServer
 import CGIHTTPServer
- 
 
-#Script pour démarrer le serveur
 PORT = 8888
 server_address = ("", PORT)
 

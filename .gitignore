@@ -3,3 +3,5 @@
 !*.js
 !*.jpg
 !*.md
+
+data/img/tmp/*

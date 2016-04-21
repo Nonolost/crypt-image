@@ -1,3 +1,7 @@
+#!C:/Python27/python.exe
+# -*-coding:utf-8 -*-
+# Script python standard qui permet de démarrer un serveur sur le port 8888
+
 import BaseHTTPServer
 import CGIHTTPServer
 

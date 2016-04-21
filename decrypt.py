@@ -1,37 +1,34 @@
-#!C:/Python27/python.exe
-#print "Content-type: text/html\r\n\r\n";
-#//20256542
+# -*-coding:utf-8 -*-
 
 import cgi, os
 import cgitb; cgitb.enable()
-import requests
-
-form = cgi.FieldStorage()
-
-
-fileitem = form.getvalue('image')
-
-
-# Test if the file was uploaded
-   # strip leading path from file name to avoid 
-   # directory traversal attacks
-nom = form.getvalue('nom').split('\\')[-1]
-path = "data/img/tmp/"+nom
-f = open(path, 'wb')
-f.write(fileitem)
-f.close()
-
 from SteganoClass import SteganoClass
 from PIL import Image
 
-lenaPure = Image.open(path)
+def decrypt():
+	# on récupère la requête utilisateur et l'image qu'il nous envoie
+	requete = cgi.FieldStorage()
+	image = requete.getvalue('image')
+	cheminImage = requete.getvalue('nom')
 
-steg2 = SteganoClass(lenaPure, '')
-hiddenMess = SteganoClass.reveal(steg2)
+	if image and cheminImage:
+		# on récupère le nom de l'image pour consituer le path sur le serveur
+		nomImage = cheminImage.split('\\')[-1]
 
-print 'Content-Type: text/html\n\n'
-print '<p class="result">'+hiddenMess+'</p>'
+		# idéalement, on a un script qui supprime toutes les heures les fichierd dans tmp
+		cheminServeur = "data/img/tmp/" + nomImage
 
-#crypt.show()
+		# on reconstitue l'image
+		f = open(cheminServeur, 'wb')
+		f.write(image)
+		f.close()
 
-#
+		# on récupère le message caché
+		messageCache = SteganoClass.reveal(SteganoClass(Image.open(cheminServeur), ''))
+
+		# on consitute une réponse que le client va récupérer avec le message caché récupéré
+		print 'Content-Type: text/html\n\n'
+		print '<p class="result">'+messageCache+'</p>'
+
+if __name__ == '__main__':
+	decrypt()

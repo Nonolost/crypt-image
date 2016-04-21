@@ -1,59 +1,47 @@
-#!C:/Python27/python.exe
 # -*-coding:utf-8 -*-
-#print "Content-type: text/html\r\n\r\n";
-#//20256542
 
 import cgi, os
 import cgitb; cgitb.enable()
-import requests
+from SteganoClass import SteganoClass
+from PIL import Image
+import time
 
-form = cgi.FieldStorage()
+def encrypt():
+	# on récupère la requête et les éléments de la requête
+	requete = cgi.FieldStorage()
 
+	nouveau = requete.getvalue('new')
+	message = requete.getvalue('mess')
+	image = requete.getvalue('image')
+	cheminImage = requete.getvalue('nom')
 
+	# on vérifie que la requête contient toutes les variables dont on a besoin suivant l'état (image envoyée ou présente sur le serveur)
+	if not nouveau or not message or (nouveau == '1' and (not image or not cheminImage)) :
+		pass
 
+	if nouveau == '1':
+		# on va recomposer l'image qui nous a été envoyée et l'ouvrir pour s'en servir
+		nomImage = cheminImage.split('\\')[-1]
+		cheminServeur = "data/img/tmp/"+str(time.time())+nomImage
 
-# Test if the file was uploaded
-   # strip leading path from file name to avoid 
-   # directory traversal attacks
-if (form.getvalue('new')=='1'):
+		f = open(cheminServeur, 'wb')
+		f.write(image)
+		f.close()
 
-	nom = form.getvalue('nom').split('\\')[-1]
-	fileitem = form.getvalue('image')
-	npath = "data/img/tmp/"+nom
-	f = open(npath, 'wb')
-	f.write(fileitem)
-	f.close()
+		imagePIL = Image.open(cheminServeur)
+	else if nouveau == '0':
+		cheminServeur = "data/img/tmp"+str(time.time())+ancienCheminServeur.split('/')[-1]
 
-	from SteganoClass import SteganoClass
-	from PIL import Image
+		# on ouvre simplement l'image présente sur notre serveur
+		imagePIL = Image.open(image)
+		
 
-	lenaPure = Image.open(npath)
-	stegMess = form.getvalue('mess')
+	SteganoClass.hide(SteganoClass(imagePIL, message)).save(cheminServeur)
 
-	steg = SteganoClass(lenaPure, stegMess)
+	# on renvoie au client du code html qui contient un lien vers la nouvelle image créée contenant le message crypté
+	print 'Content-Type: text/html\n\n'
+	print '<h1 class="center-block">Prend ça et va-t-en !</h1>'
+	print '<img class="center-block" src="'+cheminServeur+'"/>'
 
-	crypt = SteganoClass.hide(steg)
-	crypt.save(npath)
-
-else:
-	path = form.getvalue('image')
-	coupe = path.split('/')
-
-	path = "data/img/"+coupe[-1]
-	from SteganoClass import SteganoClass
-	from PIL import Image
-	import time
-
-	lenaPure = Image.open(path)
-	stegMess = form.getvalue('mess')
-
-	steg = SteganoClass(lenaPure, stegMess)
-
-	crypt = SteganoClass.hide(steg)
-	npath = "data/img/tmp/"+str(time.time())+coupe[-1]
-	crypt.save(npath)
-
-
-print 'Content-Type: text/html\n\n'
-print '<h1 class="center-block">Prend ça et va-t-en !</h1>'
-print '<img class="center-block" src="'+npath+'"/>'
+if __name__ == '__main__':
+	encrypt()

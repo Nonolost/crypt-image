@@ -1,3 +1,6 @@
+# -*-coding:utf-8 -*-
+# Script python qui implémente un algorithme de stéganographie modifiant la valeur du bit de poit faible de chaque pixel pour cacher un message ou le récupérer
+
 from PIL import Image
 from numpy import *
 import random
@@ -29,7 +32,8 @@ class SteganoClass:
             return oldbyte | newbit
         else:
             return oldbyte & 0b11111110
-    # function called to hide message in a picture ( image + string to image )
+
+    # fonction permetant de cacher un message dans une image   
     def hide(self):
         bitstream = SteganoClass.bit_generator(self, self.message)
         wImg, hImg = self.img.size
@@ -57,7 +61,8 @@ class SteganoClass:
         for bit in bit_list:
             output = output * 2 + bit
         return output
-    # function called to reveal a message from a picture ( image to string )
+
+    # fonction permettant de révéler le message caché dans une image
     def reveal(self):
         data = list(self.img.getdata())
         mess = []

@@ -9,14 +9,6 @@ form = cgi.FieldStorage()
 print("Content-type: text/html; charset=utf-8\n")
 
 
-
-#fichier_encrypt = form.getvalue("fichier")
-#text_encrypt = form.getvalue("text_encrypt")
-#mdp_encrypt = form.getvalue("mdp_encrypt")
-
-#fichier_decrypt = form.getvalue("fichier")
-#mdp_decrypt = form.getvalue("mdp_decrypt")
-
 html = """
 <!DOCTYPE html>
 <head>

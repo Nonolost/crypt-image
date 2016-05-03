@@ -5,13 +5,17 @@
 import BaseHTTPServer
 import CGIHTTPServer
 
-PORT = 8888
-server_address = ("", PORT)
+def demarrer():
+	PORT = 8888
+	server_address = ("", PORT)
 
-server = BaseHTTPServer.HTTPServer
-handler = CGIHTTPServer.CGIHTTPRequestHandler
-handler.cgi_directories = ["/"]
-print "Serveur actif sur le port :", PORT
+	server = BaseHTTPServer.HTTPServer
+	handler = CGIHTTPServer.CGIHTTPRequestHandler
+	handler.cgi_directories = ["/"]
+	print "Serveur actif sur le port :", PORT
 
-httpd = server(server_address, handler)
-httpd.serve_forever()
+	httpd = server(server_address, handler)
+	httpd.serve_forever()
+
+if __name__ == '__main__':
+	demarrer()

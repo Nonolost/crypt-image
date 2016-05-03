@@ -17,7 +17,8 @@ def encrypt():
 
 	# on vérifie que la requête contient toutes les variables dont on a besoin suivant l'état (image envoyée ou présente sur le serveur)
 	if not nouveau or not message or (nouveau == '1' and (not image or not cheminImage)) :
-		pass
+		return
+
 
 	if nouveau == '1':
 		# on va recomposer l'image qui nous a été envoyée et l'ouvrir pour s'en servir
@@ -29,13 +30,12 @@ def encrypt():
 		f.close()
 
 		imagePIL = Image.open(cheminServeur)
-	else if nouveau == '0':
-		cheminServeur = "data/img/tmp"+str(time.time())+ancienCheminServeur.split('/')[-1]
+	elif nouveau == '0':
+		cheminServeur = "data/img/tmp/"+str(time.time())+image.split('/')[-1]
 
 		# on ouvre simplement l'image présente sur notre serveur
-		imagePIL = Image.open(image)
+		imagePIL = Image.open("data/img/"+image.split('/')[-1])
 		
-
 	SteganoClass.hide(SteganoClass(imagePIL, message)).save(cheminServeur)
 
 	# on renvoie au client du code html qui contient un lien vers la nouvelle image créée contenant le message crypté

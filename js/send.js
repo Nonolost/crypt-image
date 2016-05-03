@@ -1,3 +1,4 @@
+// fonction qui va vérifier que les conditions sont bonnes (champs remplis et correct) lorsqu'on veut cacher du texte
 function preparerEnvoieEncrypt() {
 	var fichier = $('#encrypt-fichier').val();
 	if(fichier === '' && !$('.selected')[0]) {
@@ -36,65 +37,33 @@ function preparerEnvoieEncrypt() {
 		return;
 	}
 
-	var reader = new FileReader();
-	var encrypted;
+	var encrypted = CryptoJS.AES.encrypt(message, mdp);
+	var formData = new FormData();
+
+	formData.append('nom',fichier);
+	formData.append('mess',encrypted);
 
 	if(!$('.selected')[0]) {
-		reader.onload = function(e) {
-			encrypted = CryptoJS.AES.encrypt(message, mdp);
-
-			var formData = new FormData();
-
-
-			formData.append('nom',fichier);
-			formData.append('mess',encrypted);
-			formData.append('new',1);
-			formData.append('image',$('#encrypt-fichier')[0].files[0]);
-			$.ajax({
-		        type: 'POST',
-		        url: 'encrypt.py',
-		        data: formData,
-		        contentType: false,
-		        cache: false,
-		        processData: false,
-		        async: true,
-		        success: function(data) {
-		        	$('#result').html(data);
-		        },
-		    });
-		}
-
-
-		reader.readAsDataURL($('#encrypt-fichier')[0].files[0]);
+		formData.append('new',1);
+		formData.append('image',$('#encrypt-fichier')[0].files[0]);
 	}
 	else {
-		encrypted = CryptoJS.AES.encrypt(message, mdp);
-
-		var formData = new FormData();
-
-
-		formData.append('nom',fichier);
-		formData.append('mess',encrypted);
 		formData.append('new',0);
 		formData.append('image',$('.selected').find('.imgBB')[0].src);
-		
-		$.ajax({
-	        type: 'POST',
-	        url: 'encrypt.py',
-	        data: formData,
-	        contentType: false,
-	        cache: false,
-	        processData: false,
-	        async: true,
-	        success: function(data) {
-	        	$('#result').html(data);
-	        },
-	    });
 	}
 	
-
-	
-	//formData.append('img', encrypted, fichier);
+	$.ajax({
+		type: 'POST',
+		url: 'encrypt.py',
+		data: formData,
+		contentType: false,
+		cache: false,
+		processData: false,
+		async: true,
+		success: function(data) {
+		    $('#result').html(data);
+		},
+	});
 }
 
 function preparerEnvoieDecrypt() {
@@ -124,43 +93,37 @@ function preparerEnvoieDecrypt() {
 		return;
 	}
 
-	var reader = new FileReader();
-	var encrypted;
+	var formData = new FormData();
 
-	reader.onload = function(e) {
-		var formData = new FormData();
+	formData.append('image',$('#decrypt-fichier')[0].files[0]);
+	formData.append('nom',fichier);
 
+	$.ajax({
+	    type: 'POST',
+	    url: 'decrypt.py',
+	    data: formData,
+	    contentType: false,
+	    cache: false,
+	    processData: false,
+	    async: true,
+	    success: function(data) {
+	        $('.test').html(data);
+	        var result = $('.result').text();
+	        $('.test').html("");
 
-		formData.append('image',$('#decrypt-fichier')[0].files[0]);
-		formData.append('nom',fichier);
+	        var decode = CryptoJS.AES.decrypt(result, mdp).toString(CryptoJS.enc.Utf8);
 
-		$.ajax({
-	        type: 'POST',
-	        url: 'decrypt.py',
-	        data: formData,
-	        contentType: false,
-	        cache: false,
-	        processData: false,
-	        async: true,
-	        success: function(data) {
-	            $('.test').html(data);
-
-	        	var result = $('.result').text();
-	        	$('.test').html("");
-	        	var decode = CryptoJS.AES.decrypt(result, mdp).toString(CryptoJS.enc.Utf8);
-	        	if (decode === "") {
-	        		$('#result').html('<div class="alert alert-danger">Petit filou, c\'est pas le bon mot de passe !</div>');
-	        	}
-	        	else {
-	        		$('#result').html('<div class="alert alert-success"><h3>Psss, j\'ai un secret pour toi ...</h3><p>'+decode+'</p></div>');
-	        	}
-	        },
-	    });
-	}
-
-	reader.readAsDataURL($('#decrypt-fichier')[0].files[0]);
+	        if (decode === "") {
+	        	$('#result').html('<div class="alert alert-danger">Petit filou, c\'est pas le bon mot de passe !</div>');
+	        }
+	        else {
+	        	$('#result').html('<div class="alert alert-success"><h3>Psss, j\'ai un secret pour toi ...</h3><p>'+decode+'</p></div>');
+	        }
+	    },
+	});
 }
 
+// fonction qui sert de filtre pour contrer l'injonction xss
 function analyseMessage (message) {
 	return (/^.*<[sS][cC][rR][iI][pP][tT]>.*<\/[sS][cC][rR][iI][pP][tT]>.*$/.test(message) 
 	|| /^.*[aA][lL][eE][rR][tT](.*).*$/.test(message)
@@ -168,10 +131,11 @@ function analyseMessage (message) {
 	|| /^.*[iI][fF][rR][aA][mM][eE].*$/.test(message));
 }
 
+// on vérifie que le fichier a un format correct
 function analyseFichier (fichier) {
 	var res = fichier.split(".");
 
-	var ext = ["jpg","png"];
+	var ext = ["png","bmp","tif","tiff"];
 
 	return (ext.indexOf(res[res.length-1]) < 0);
 }
